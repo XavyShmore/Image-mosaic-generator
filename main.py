@@ -4,9 +4,9 @@ from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
-def creer_mosaique_aleatoire(dossier_images, n, taille_image=(200, 200)):
+def creer_mosaique_aleatoire(dossier_images, n_largeur, n_hauteur, taille_image=(200, 200)):
     """
-    Génère une mosaïque d'images de n x n à partir d'un dossier.
+    Génère une mosaïque d'images de n_largeur x n_hauteur à partir d'un dossier.
     Retourne un objet PIL Image ou None si une erreur survient.
     """
     try:
@@ -23,19 +23,19 @@ def creer_mosaique_aleatoire(dossier_images, n, taille_image=(200, 200)):
 
     random.shuffle(chemins_images)
     
-    nombre_images_necessaires = n * n
+    nombre_images_necessaires = n_largeur * n_hauteur
     if len(chemins_images) < nombre_images_necessaires:
         chemins_images = (chemins_images * (nombre_images_necessaires // len(chemins_images) + 1))
     
     images_selectionnees = chemins_images[:nombre_images_necessaires]
 
-    largeur_mosaique = n * taille_image[0]
-    hauteur_mosaique = n * taille_image[1]
+    largeur_mosaique = n_largeur * taille_image[0]
+    hauteur_mosaique = n_hauteur * taille_image[1]
     mosaique = Image.new('RGB', (largeur_mosaique, hauteur_mosaique))
     
     index_image = 0
-    for i in range(n):
-        for j in range(n):
+    for i in range(n_hauteur):
+        for j in range(n_largeur):
             try:
                 img = Image.open(images_selectionnees[index_image])
                 img = img.resize(taille_image, Image.Resampling.LANCZOS)
@@ -69,10 +69,14 @@ class MosaicApp:
         self.label_dossier.pack(side=tk.LEFT, padx=5)
 
         # Taille de la mosaïque
-        ttk.Label(control_frame, text="Taille de la mosaique (NxN):").pack(side=tk.LEFT, padx=(20, 5))
-        self.spinbox_n = ttk.Spinbox(control_frame, from_=1, to=20, width=5)
-        self.spinbox_n.set(3)
-        self.spinbox_n.pack(side=tk.LEFT, padx=5)
+        ttk.Label(control_frame, text="Taille mosaïque (LxH):").pack(side=tk.LEFT, padx=(20, 5))
+        self.spinbox_n_w = ttk.Spinbox(control_frame, from_=1, to=50, width=5)
+        self.spinbox_n_w.set(3)
+        self.spinbox_n_w.pack(side=tk.LEFT, padx=2)
+        ttk.Label(control_frame, text="x").pack(side=tk.LEFT, padx=2)
+        self.spinbox_n_h = ttk.Spinbox(control_frame, from_=1, to=50, width=5)
+        self.spinbox_n_h.set(3)
+        self.spinbox_n_h.pack(side=tk.LEFT, padx=5)
 
         # Taille des images
         ttk.Label(control_frame, text="Taille image (px):").pack(side=tk.LEFT, padx=(20, 5))
@@ -109,17 +113,18 @@ class MosaicApp:
             return
 
         try:
-            n = int(self.spinbox_n.get())
+            n_w = int(self.spinbox_n_w.get())
+            n_h = int(self.spinbox_n_h.get())
             img_w = int(self.spinbox_img_w.get())
             img_h = int(self.spinbox_img_h.get())
-            if n <= 0 or img_w <= 0 or img_h <= 0:
+            if n_w <= 0 or n_h <= 0 or img_w <= 0 or img_h <= 0:
                 raise ValueError
             taille_image = (img_w, img_h)
         except ValueError:
             messagebox.showerror("Erreur", "Les tailles doivent être des nombres entiers positifs.")
             return
 
-        self.image_mosaique = creer_mosaique_aleatoire(self.dossier_source, n, taille_image)
+        self.image_mosaique = creer_mosaique_aleatoire(self.dossier_source, n_w, n_h, taille_image)
 
         if self.image_mosaique:
             # Redimensionner pour l'aperçu
